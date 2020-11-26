@@ -16,7 +16,7 @@ app.set('view engine', 'ejs');
 
 // 设置跨域
 var allowCrossDomain = function(req, res, next) {
-    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Origin', '*'); // 设置允许访问的域名
     res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
     res.header('Access-Control-Allow-Headers', 'Content-Type');
     res.header('Access-Control-Allow-Credentials', 'true');
@@ -32,6 +32,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// 设置路由头路径
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/patients', patientsRouter)

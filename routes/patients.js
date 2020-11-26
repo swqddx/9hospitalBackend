@@ -8,7 +8,7 @@ router.get('/', function(req, res, next) {
 
 /* get patient list. */
 router.get('/patient_list/', function(req, res, next) {
-    console.log();
+    console.log(req);
     res.send('respond with a resource');
 });
 
