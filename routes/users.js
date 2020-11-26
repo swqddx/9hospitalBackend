@@ -1,10 +1,20 @@
+/*
+ * @Author: your name
+ * @Date: 2020-11-26 13:47:26
+ * @LastEditTime: 2020-11-26 14:21:37
+ * @LastEditors: Please set LastEditors
+ * @Description: In User Settings Edit
+ * @FilePath: \9hospitalBackend\routes\users.js
+ */
+
+ 
 var express = require('express');
 var router = express.Router();
 
 /* GET users listing. */
 router.get('/', function(req, res, next) {
     // console.log(req.query);
-    res.redirect('/login');
+    res.redirect('/users/login');
 });
 
 /* GET users listing. */

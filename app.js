@@ -1,3 +1,11 @@
+/*
+ * @Author: your name
+ * @Date: 2020-11-26 13:47:26
+ * @LastEditTime: 2020-11-26 14:17:25
+ * @LastEditors: Please set LastEditors
+ * @Description: In User Settings Edit
+ * @FilePath: \9hospitalBackend\app.js
+ */
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
@@ -7,6 +15,7 @@ var logger = require('morgan');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var patientsRouter = require('./routes/patients');
+var iotRouter = require('./routes/iot');
 
 var app = express();
 
@@ -36,7 +45,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/patients', patientsRouter)
-
+app.use('/iot', iotRouter)
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
     next(createError(404));
