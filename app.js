@@ -1,21 +1,28 @@
 /*
  * @Author: your name
  * @Date: 2020-11-26 13:47:26
- * @LastEditTime: 2020-11-26 14:17:25
+ * @LastEditTime: 2020-11-30 15:33:18
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \9hospitalBackend\app.js
  */
+
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
+// 路由文件配置
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var patientsRouter = require('./routes/patients');
 var iotRouter = require('./routes/iot');
+
+// 数据库文件配置
+// var mysql = require('mysql');
+// var mysqlconfig = require('./modules/database/mysqlconfig');
+// var handleMethod = require('./modules/database/handle');
 
 var app = express();
 
