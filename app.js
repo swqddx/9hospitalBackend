@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-11-26 13:47:26
- * @LastEditTime: 2020-11-30 15:33:18
+ * @LastEditTime: 2020-12-01 15:18:42
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \9hospitalBackend\app.js
@@ -44,7 +44,9 @@ app.use(allowCrossDomain);
 
 app.use(logger('dev'));
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: true }));
+
+
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
