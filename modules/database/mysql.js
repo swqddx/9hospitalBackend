@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-11-26 15:59:45
- * @LastEditTime: 2020-11-30 18:09:08
+ * @LastEditTime: 2020-11-30 20:30:29
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \9hospitalBackend\modules\database\poolconnect.js
@@ -24,39 +24,36 @@ const mysqlconfig = {
     port: 8686
 };
 
-const sqlCommand = {
-    Add: "",
-    Delete: "",
-    Update: "",
-    Select: "SELECT * FROM patient_list"
-}
-
 class Mysql {
     constructor(config = mysqlconfig) {
         this.config = config;
-        this.connection = mysql.createConnection(this.config);
-        this.connection.connect();
-    };
-
-    add() {
-        this.connection.query();
-        return
-    };
-    delete() {
-        this.connection.query();
-        return
-    };
-    update() {
-        this.connection.query();
-        return
-    };
-    select() {
-        this.connection.query(sqlCommand.Select, function(err, result){
-            console.log(result);
-            return result;
+        this.pool = mysql.createPool({
+            ...mysqlconfig,
+            connectionLimit: 10,
+            queueLimit: 10
         });
-
     };
+
+    query(command, args) {
+        return new Promise((resolve, reject) => {
+            this.pool.getConnection(function (err, connection) {
+                if (err) {
+                    reject(err);
+                    connection.release();
+                } else {
+                    connection.query(command, args, function (err, result) {
+                        if (err) {
+                            reject(err);
+                            connection.release();
+                        } else {
+                            resolve(result);
+                            connection.release();
+                        }
+                    })
+                }
+            })
+        })
+    }
 }
 
 
