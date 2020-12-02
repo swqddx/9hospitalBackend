@@ -2,11 +2,13 @@
 
 # dependencies
 **/node_modules
+/public
 _roadhog-api-doc
 
 # production
 /dist
 /.vscode
+/public
 
 
 
