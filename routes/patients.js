@@ -10,10 +10,11 @@ var express = require('express');
 var router = express.Router();
 var multer = require('multer');
 var moment = require('moment');
+
 var fs = require('fs');
 var _ = require('lodash');
 
-const { path } = require('../app');
+// const { path } = require('../app');
 
 // const fileFilter = function (req, file, cb) {
 //     console.log("fileFilter: ", file);
@@ -138,11 +139,11 @@ router.get('/patient_schedule/', function (req, res) {
             ]
         }
     ]
-    mysql.query('SELECT * FROM patient_schedule WHERE id=?', [id]).then((result) => {
+    mysql.query('SELECT * FROM patient_schedule WHERE patient=?', [id]).then((result) => {
         const schedule = result[0];
         Object.keys(schedule).map((item) => {
             if (item.includes("_time")) {
-                let name = _.trimEnd(item, "_time");
+                let name = item.split("_time")[0];
                 itemslist.map((stage) => {
                     if (stage.name === name) {
                         stage.time = schedule[item];
@@ -157,7 +158,7 @@ router.get('/patient_schedule/', function (req, res) {
 
             }
             if (item.includes("_status")) {
-                let name = _.trimEnd(item, "_status");
+                let name = item.split("_status")[0];
                 itemslist.map((stage) => {
                     if (stage.name === name) {
                         stage.status = schedule[item];
@@ -174,6 +175,145 @@ router.get('/patient_schedule/', function (req, res) {
         res.json(itemslist);
     }).catch((err) => {
         res.send(err);
+    });
+})
+
+router.get('/edit_schedule/', function (req, res) {
+    const { id } = req.query;
+    const { key } = req.query;
+    const time = moment().format("YYYY-MM-DD HH:mm:ss");
+    
+    mysql.query('UPDATE patient_schedule SET '+ key +'_status='+ '\'completed\''+', '+ key +'_time=\''+ time+'\' WHERE patient=?', [id]);
+
+    // console.log('UPDATE patient_schedule SET '+ key +'_status='+ '\'completed\''+', '+ key +'_time=\''+ time+'\' WHERE patient=?');
+
+    let itemslist = [
+        {
+            name: "stage_1",
+            label: "首次就诊",
+            status: "",
+            time: "",
+            children: [
+                { name: "maxillofacial_panorama", label: "颌面部全景图", status: "", time: "" },
+                { name: "maxillofacial_CT", label: "颌面部CT图", status: "", time: "" },
+                { name: "joint_MRI", label: "颞下关节MRI", status: "", time: "" },
+                { name: "dental_model", label: "白石膏牙模", status: "", time: "" },
+                { name: "clinical_examination", label: "临床检查", status: "", time: "" },
+            ]
+        },
+        {
+            name: "stage_2",
+            label: "二次就诊",
+            status: "",
+            time: "",
+            children: [
+                { name: "CT_reconstruction", label: "CT重建", status: "", time: "" },
+                { name: "model_scanning", label: "牙模激光扫描", status: "", time: "" },
+                { name: "threedimensional_design", label: "三维设计", status: "", time: "" },
+            ]
+        },
+        {
+            name: "stage_3",
+            label: "手术",
+            status: "",
+            time: "",
+            children: [
+                { name: "design_review", label: "设计方案确定", status: "", time: "" },
+                { name: "guide_printing", label: "合金导板打印", status: "", time: "" },
+                { name: "operation", label: "手术", status: "", time: "" },
+            ]
+        },
+        {
+            name: "stage_4",
+            label: "术后复诊",
+            status: "",
+            time: "",
+            children: [
+                { name: "occlusion_check", label: "咬合关系检查", status: "", time: "" },
+                { name: "faceshape_evaluation", label: "面形评估", status: "", time: "" },
+                { name: "imaging_panorama", label: "影像学全景片", status: "", time: "" },
+                { name: "positioning_film", label: "头颅定位片", status: "", time: "" },
+                { name: "CT_examination", label: "CT检查", status: "", time: "" },
+            ]
+        }
+    ]
+
+    mysql.query('SELECT * FROM patient_schedule WHERE patient=?', [id]).then((result) => {
+        const schedule = result[0];
+        Object.keys(schedule).map((item) => {
+            if (item.includes("_time")) {
+                let name = item.split("_time")[0];
+                itemslist.map((stage) => {
+                    if (stage.name === name) {
+                        stage.time = schedule[item];
+                    } else {
+                        stage.children.map((child) => {
+                            if (child.name === name) {
+                                child.time = schedule[item];
+                            }
+                        })
+                    }
+                })
+
+            }
+            if (item.includes("_status")) {
+                let name = item.split("_status")[0];
+                itemslist.map((stage) => {
+                    if (stage.name === name) {
+                        stage.status = schedule[item];
+                    } else {
+                        stage.children.map((child) => {
+                            if (child.name === name) {
+                                child.status = schedule[item];
+                            }
+                        })
+                    }
+                })
+            }
+        });
+        itemslist.map((stage, index )=>{
+            if(stage.status == 'processing'){
+                let changed = 1;
+                stage.children.map((child)=>{
+                    if(child.status == 'processing' ){
+                        changed = 0;
+                    }
+                })
+                if(changed == 1){
+                    let command_all='UPDATE patient_schedule SET '+ stage.name +'_status='+ '\'completed\'' + ', ' + stage.name + '_time=' + '\'' + time + '\'';
+                    if(index<3){
+                        const command = itemslist[index+1].children.map((child)=>{
+                            return child.name + '_status=\'processing\', ' + child.name + '_time=' + '\'' + moment(time).add(1, "days").format("YYYY-MM-DD HH:mm:ss") + '\'';
+                        }).join(', ');
+                        command_all = command_all +', ' + command + ', ' + itemslist[index+1].name + '_status=' + '\'processing\'' + ', ' + itemslist[index+1].name + '_time=' + '\'' + moment(time).add(1, "days").format("YYYY-MM-DD HH:mm:ss") + '\' WHERE patient=?';
+                    } else {
+                        command_all = command_all + ' WHERE patient=?';
+                    }
+                    mysql.query(command_all, [id]);
+                }
+            }
+        })
+        res.json({status: 'success'});
+    }).catch((err) => {
+        res.send(err);
+    });
+})
+
+router.get('/add_schedule/', function (req, res) {
+    const { id } = req.query;
+    let command_all = 'INSERT INTO patient_schedule (patient, stage_1_status, stage_1_time, joint_MRI_status, joint_MRI_time, maxillofacial_panorama_status, maxillofacial_panorama_time, maxillofacial_CT_status, maxillofacial_CT_time, dental_model_status, dental_model_time, clinical_examination_status, clinical_examination_time, ';
+    command_all = command_all + 'stage_2_status, CT_reconstruction_status, model_scanning_status, threedimensional_design_status, ';
+    command_all = command_all + 'stage_3_status, design_review_status, guide_printing_status, operation_status, ';
+    command_all = command_all + 'stage_4_status, occlusion_check_status, faceshape_evaluation_status, imaging_panorama_status, positioning_film_status, CT_examination_status) VALUES (';
+    command_all = command_all + '\'' + id + '\'';
+
+    command_all = command_all + (' ,\'processing\'' + ', \'' + moment().format("YYYY-MM-DD HH:mm:ss") + '\'').repeat(6);
+    command_all = command_all + (' ,\'uncompleted\'').repeat(14) + ')';
+    console.log(command_all);
+    mysql.query(command_all).then((result) => {
+        res.json({ status: "success", data: result });
+    }).catch((err) => {
+        res.json({ data: err, status: "error", });
     });
 })
 
