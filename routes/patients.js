@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-11-26 13:47:26
- * @LastEditTime: 2020-12-03 21:51:12
+ * @LastEditTime: 2020-12-06 14:07:24
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \9hospitalBackend\routes\patients.js
@@ -43,7 +43,7 @@ const storgeCt = multer.diskStorage({
         } catch (err) {
             console.log(err);
         }
-        callback(null, `${process.cwd()}\\public\\file\\${req / id}`);
+        callback(null, `${process.cwd()}\\public\\file\\${req.id}`);
     },
     filename: function (req, file, callback) {  // file上传的文件信息, callback 重命名处理
         let filename = (file.originalname).split('.');  //['文件名','文件后缀'] eg: 1.png
